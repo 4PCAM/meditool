@@ -849,1007 +849,173 @@
         </div>
     </div>
 
-    <script>
-            
-// 4-PILLAR AYURVEDIC ASSESSMENT SYSTEM - PART 2 (JavaScript)
-// This script should be added to the HTML from Part 1, replacing the simple console.log
+<script>
+// ======================= GLOBAL VARIABLES =======================
+let currentPage = 'main';
+const completedPillars = { agni: false, dosha: false, dhatu: false, srotas: false };
 
-// Global data storage
-let assessmentData = {
-    patient: {},
-    agni: { vishama: 0, tikshna: 0, manda: 0, sama: 0 },
-    dosha: { vata: 0, pitta: 0, kapha: 0 },
-    dhatu: {},
-    srotas: {},
-    selections: {},
-    completed: { agni: false, dosha: false, dhatu: false, srotas: false }
-};
-
-// Initialize the application when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    // Set today's date
-    document.getElementById('assessmentDate').valueAsDate = new Date();
-    
-    // Add event listeners to all clickable cells
-    document.querySelectorAll('.clickable-cell').forEach(cell => {
-        cell.addEventListener('click', function() {
-            handleCellClick(this);
-        });
-    });
-    
-    // Add form validation listeners
-    document.getElementById('patientName').addEventListener('input', validateForm);
-    document.getElementById('ageSex').addEventListener('input', validateForm);
-    document.getElementById('complaints').addEventListener('input', validateForm);
-    
-    updateProgress();
-});
-
-// Form validation
-function validateForm() {
-    const name = document.getElementById('patientName').value.trim();
-    const ageSex = document.getElementById('ageSex').value.trim();
-    const complaints = document.getElementById('complaints').value.trim();
-    
-    const isValid = name && ageSex && complaints;
-    
-    // Enable/disable first pillar based on form completion
-    const agniBtn = document.getElementById('agni-btn');
-    if (isValid) {
-        agniBtn.classList.remove('locked');
-        agniBtn.classList.add('available');
-    } else {
-        agniBtn.classList.add('locked');
-        agniBtn.classList.remove('available');
-    }
-}
-
-// Page navigation
+// ======================= PAGE NAVIGATION =======================
 function showPage(pageId) {
-    // Hide all pages
-    document.querySelectorAll('.page').forEach(page => {
-        page.classList.remove('active');
-    });
-    
-    // Show selected page
-    document.getElementById(pageId).classList.add('active');
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(pageId + '-page').classList.add('active');
+  currentPage = pageId;
 }
 
 function goToMain() {
-    showPage('main-page');
-    updateProgress();
+  showPage('main');
 }
 
-// Assessment navigation
 function startAssessment(pillar) {
-    // Validate form for first assessment
-    if (pillar === 'agni') {
-        const name = document.getElementById('patientName').value.trim();
-        const ageSex = document.getElementById('ageSex').value.trim();
-        const complaints = document.getElementById('complaints').value.trim();
-        
-        if (!name || !ageSex || !complaints) {
-            alert('Please fill in all required fields (Name, Age/Sex, Chief Complaints) before starting the assessment.');
-            return;
-        }
-    }
-    
-    // Check if pillar is available
-    const btn = document.getElementById(pillar + '-btn');
-    if (btn.classList.contains('locked')) {
-        alert('Complete the previous assessments first to unlock this pillar.');
-        return;
-    }
-    
-    showPage(pillar + '-page');
+  if (document.getElementById(pillar + '-btn').classList.contains('locked')) return;
+  showPage(pillar);
 }
 
-// Cell click handler
-function handleCellClick(cell) {
-    const pillar = cell.dataset.pillar;
-    const parameter = cell.dataset.parameter;
-    
-    if (pillar === 'agni') {
-        handleAgniClick(cell, parameter);
-    } else if (pillar === 'dosha') {
-        handleDoshaClick(cell, parameter);
-    }
-    // Add handlers for dhatu and srotas when implemented
-}
-
-// Agni assessment handlers
-function handleAgniClick(cell, parameter) {
-    const type = cell.dataset.type;
-    
-    // Remove previous selection for this parameter
-    document.querySelectorAll(`[data-pillar="agni"][data-parameter="${parameter}"]`).forEach(c => {
-        c.classList.remove('selected');
-    });
-    
-    // Add selection to clicked cell
-    cell.classList.add('selected');
-    
-    // Update scores
-    updateAgniScores(parameter, type);
-    
-    // Check if assessment is complete (all 8 parameters selected)
-    checkAgniCompletion();
-}
-
-function updateAgniScores(parameter, selectedType) {
-    // Remove previous score for this parameter
-    if (assessmentData.selections['agni_' + parameter]) {
-        const prevType = assessmentData.selections['agni_' + parameter];
-        assessmentData.agni[prevType]--;
-    }
-    
-    // Add new score
-    assessmentData.agni[selectedType]++;
-    assessmentData.selections['agni_' + parameter] = selectedType;
-    
-    // Update display
-    updateAgniDisplay();
-}
-
-function updateAgniDisplay() {
-    // Update score cards
-    document.getElementById('agni-vishama-score').textContent = assessmentData.agni.vishama;
-    document.getElementById('agni-tikshna-score').textContent = assessmentData.agni.tikshna;
-    document.getElementById('agni-manda-score').textContent = assessmentData.agni.manda;
-    document.getElementById('agni-sama-score').textContent = assessmentData.agni.sama;
-
-    // Calculate total dusti score
-    const totalDustiScore = assessmentData.agni.vishama + assessmentData.agni.tikshna + assessmentData.agni.manda;
-    
-    // Determine severity
-    let severity, severityClass, clinicalRisk = '';
-    if (totalDustiScore === 0 && assessmentData.agni.sama > 0) {
-        severity = 'SAMA AGNI (Balanced)';
-        severityClass = 'normal';
-        clinicalRisk = 'Ideal digestion, proper dhatu nourishment, immunity';
-    } else if (totalDustiScore >= 1 && totalDustiScore <= 4) {
-        severity = 'MILD AGNI DUSTI';
-        severityClass = 'mild';
-    } else if (totalDustiScore >= 5 && totalDustiScore <= 6) {
-        severity = 'MODERATE AGNI DUSTI';
-        severityClass = 'moderate';
-    } else if (totalDustiScore >= 7) {
-        severity = 'SEVERE AGNI DUSTI';
-        severityClass = 'severe';
-    } else {
-        severity = 'Assessment in progress...';
-        severityClass = 'mild';
-    }
-
-    // Find dominant agni type
-    let dominantType = '';
-    let maxScore = 0;
-    Object.keys(assessmentData.agni).forEach(type => {
-        if (assessmentData.agni[type] > maxScore) {
-            maxScore = assessmentData.agni[type];
-            dominantType = type;
-        }
-    });
-
-    // Set clinical risks based on dominant type
-    const risks = {
-        vishama: 'IBS, flatulence, irregular metabolism, anxiety (Vata dominance)',
-        tikshna: 'Hyperacidity, ulcers, gastritis, inflammation (Pitta dominance)',
-        manda: 'Ama formation, metabolic sluggishness, weight gain (Kapha dominance)',
-        sama: 'Ideal digestion, proper dhatu nourishment, immunity (Tridosha Balance)'
-    };
-
-    if (maxScore > 0) {
-        clinicalRisk = risks[dominantType];
-    }
-
-    // Update results display
-    const resultsHTML = `
-        <p><strong>Total Dusti Score:</strong> ${totalDustiScore}/8</p>
-        <p><strong>Severity:</strong> <span class="severity-indicator ${severityClass}">${severity}</span></p>
-        ${maxScore > 0 ? `<p><strong>Dominant Pattern:</strong> ${dominantType.charAt(0).toUpperCase() + dominantType.slice(1)} Agni (Score: ${maxScore})</p>` : ''}
-        <p><strong>Clinical Risk:</strong> ${clinicalRisk}</p>
-    `;
-    
-    document.getElementById('agni-results').innerHTML = resultsHTML;
-}
-
-function checkAgniCompletion() {
-    // Check if all 8 parameters are selected
-    const agniParameters = ['hunger', 'digestion', 'stool', 'bloating', 'appetite', 'tongue', 'afterfood', 'weight'];
-    const selectedCount = agniParameters.filter(param => assessmentData.selections['agni_' + param]).length;
-    
-    const completeBtn = document.getElementById('agni-complete-btn');
-    if (selectedCount === 8) {
-        completeBtn.disabled = false;
-        completeBtn.style.background = 'linear-gradient(135deg, #00b894, #00a085)';
-    } else {
-        completeBtn.disabled = true;
-        completeBtn.style.background = '#ddd';
-    }
-    
-    // Update progress text
-    if (selectedCount < 8) {
-        document.getElementById('agni-results').innerHTML = `
-            <p><strong>Progress:</strong> ${selectedCount}/8 parameters assessed</p>
-            <p><em>Please complete all parameters to see detailed results.</em></p>
-        `;
-    }
-}
-
-// Dosha assessment handlers
-function handleDoshaClick(cell, parameter) {
-    const dosha = cell.dataset.dosha;
-    const score = parseInt(cell.dataset.score);
-    
-    // Remove previous selection for this parameter and dosha
-    document.querySelectorAll(`[data-pillar="dosha"][data-dosha="${dosha}"][data-parameter="${parameter}"]`).forEach(c => {
-        c.classList.remove('selected');
-    });
-    
-    // Add selection to clicked cell
-    cell.classList.add('selected');
-    
-    // Update scores
-    updateDoshaScores(dosha, parameter, score);
-    
-    // Check completion
-    checkDoshaCompletion();
-}
-
-function updateDoshaScores(dosha, parameter, score) {
-    // Remove previous score for this parameter
-    const selectionKey = `dosha_${dosha}_${parameter}`;
-    if (assessmentData.selections[selectionKey] !== undefined) {
-        assessmentData.dosha[dosha] -= assessmentData.selections[selectionKey];
-    }
-    
-    // Add new score
-    assessmentData.dosha[dosha] += score;
-    assessmentData.selections[selectionKey] = score;
-    
-    // Update display
-    updateDoshaDisplay();
-}
-
-function updateDoshaDisplay() {
-    // Update score cards
-    document.getElementById('vata-score').textContent = assessmentData.dosha.vata;
-    document.getElementById('pitta-score').textContent = assessmentData.dosha.pitta;
-    document.getElementById('kapha-score').textContent = assessmentData.dosha.kapha;
-
-    // Determine severity for each dosha
-    function getDoshaSeverity(score) {
-        if (score >= 0 && score <= 4) return { text: 'No significant dushti', class: 'normal' };
-        if (score >= 5 && score <= 9) return { text: 'Mild dushti', class: 'mild' };
-        if (score >= 10 && score <= 14) return { text: 'Moderate dushti', class: 'moderate' };
-        if (score >= 15 && score <= 20) return { text: 'Severe dushti', class: 'severe' };
-        return { text: 'Assessment incomplete', class: 'mild' };
-    }
-
-    const vataSeverity = getDoshaSeverity(assessmentData.dosha.vata);
-    const pittaSeverity = getDoshaSeverity(assessmentData.dosha.pitta);
-    const kaphaSeverity = getDoshaSeverity(assessmentData.dosha.kapha);
-
-    // Find dominant dosha
-    let dominantDosha = '';
-    let maxScore = 0;
-    Object.keys(assessmentData.dosha).forEach(dosha => {
-        if (assessmentData.dosha[dosha] > maxScore) {
-            maxScore = assessmentData.dosha[dosha];
-            dominantDosha = dosha;
-        }
-    });
-
-    // Update results display
-    const resultsHTML = `
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
-            <div>
-                <strong>Vata:</strong> ${assessmentData.dosha.vata}/20<br>
-                <span class="severity-indicator ${vataSeverity.class}">${vataSeverity.text}</span>
-            </div>
-            <div>
-                <strong>Pitta:</strong> ${assessmentData.dosha.pitta}/20<br>
-                <span class="severity-indicator ${pittaSeverity.class}">${pittaSeverity.text}</span>
-            </div>
-            <div>
-                <strong>Kapha:</strong> ${assessmentData.dosha.kapha}/20<br>
-                <span class="severity-indicator ${kaphaSeverity.class}">${kaphaSeverity.text}</span>
-            </div>
-        </div>
-        ${maxScore > 0 ? `<p><strong>Dominant Dosha:</strong> ${dominantDosha.charAt(0).toUpperCase() + dominantDosha.slice(1)} (Score: ${maxScore})</p>` : ''}
-    `;
-    
-    document.getElementById('dosha-results').innerHTML = resultsHTML;
-}
-
-function checkDoshaCompletion() {
-    // For now, just check if Vata assessment is complete (10 parameters)
-    const vataParameters = ['agni', 'mala', 'mutra', 'sveda', 'sparsha', 'bala', 'manasika', 'gati', 'roopam', 'jihva'];
-    const vataSelectedCount = vataParameters.filter(param => 
-        assessmentData.selections[`dosha_vata_${param}`] !== undefined
-    ).length;
-    
-    const completeBtn = document.getElementById('dosha-complete-btn');
-    if (vataSelectedCount === 10) {
-        completeBtn.disabled = false;
-        completeBtn.style.background = 'linear-gradient(135deg, #00b894, #00a085)';
-    } else {
-        completeBtn.disabled = true;
-        completeBtn.style.background = '#ddd';
-    }
-    
-    // Update progress message
-    if (vataSelectedCount < 10) {
-        document.getElementById('dosha-results').innerHTML = `
-            <p><strong>Vata Progress:</strong> ${vataSelectedCount}/10 parameters assessed</p>
-            <p><em>Complete Vata assessment first. Pitta and Kapha tables will be added in the full version.</em></p>
-        `;
-    }
-}
-
-// Assessment completion
 function completeAssessment(pillar) {
-    // Save patient data
-    savePatientData();
-    
-    // Mark pillar as completed
-    assessmentData.completed[pillar] = true;
-    
-    // Update button states
-    updatePillarButtons();
-    
-    // Show success message
-    alert(`${pillar.toUpperCase()} assessment completed successfully!`);
-    
-    // Return to main page
+  completedPillars[pillar] = true;
+  document.getElementById(pillar + '-btn').classList.remove('available');
+  document.getElementById(pillar + '-btn').classList.add('completed');
+
+  if (pillar === 'agni') document.getElementById('dosha-btn').classList.replace('locked', 'available');
+  if (pillar === 'dosha') document.getElementById('dhatu-btn').classList.replace('locked', 'available');
+  if (pillar === 'dhatu') document.getElementById('srotas-btn').classList.replace('locked', 'available');
+
+  if (Object.values(completedPillars).every(Boolean)) {
+    document.getElementById('completionStatus').style.display = 'block';
+    showPage('report');
+  } else {
     goToMain();
-    
-    // Check if all assessments are complete
-    checkAllComplete();
+  }
+
+  updateProgressBar();
 }
 
-function savePatientData() {
-    assessmentData.patient = {
-        name: document.getElementById('patientName').value,
-        ageSex: document.getElementById('ageSex').value,
-        patientId: document.getElementById('patientId').value,
-        assessmentDate: document.getElementById('assessmentDate').value,
-        complaints: document.getElementById('complaints').value,
-        pastHistory: document.getElementById('pastHistory').value,
-        additionalPoints: document.getElementById('additionalPoints').value,
-        referredBy: document.getElementById('referredBy').value
-    };
+function updateProgressBar() {
+  const completedCount = Object.values(completedPillars).filter(v => v).length;
+  const percent = (completedCount / 4) * 100;
+  document.getElementById('progressFill').style.width = percent + '%';
 }
 
-function updatePillarButtons() {
-    const pillars = ['agni', 'dosha', 'dhatu', 'srotas'];
-    
-    pillars.forEach((pillar, index) => {
-        const btn = document.getElementById(pillar + '-btn');
-        
-        if (assessmentData.completed[pillar]) {
-            // Mark as completed
-            btn.classList.remove('available', 'locked');
-            btn.classList.add('completed');
-        } else if (index === 0 || assessmentData.completed[pillars[index - 1]]) {
-            // Make available if first pillar or previous is completed
-            btn.classList.remove('locked', 'completed');
-            btn.classList.add('available');
-        } else {
-            // Keep locked
-            btn.classList.remove('available', 'completed');
-            btn.classList.add('locked');
-        }
-    });
+// ======================= AGNI DUSTI ASSESSMENT =======================
+const agniSelections = {
+  hunger: null,
+  digestion: null,
+  stool: null,
+  bloating: null,
+  appetite: null,
+  tongue: null,
+  afterfood: null,
+  weight: null
+};
+
+function updateAgniScores() {
+  let vishama = 0, tikshna = 0, manda = 0, sama = 0;
+
+  Object.values(agniSelections).forEach(type => {
+    if (type === 'vishama') vishama++;
+    else if (type === 'tikshna') tikshna++;
+    else if (type === 'manda') manda++;
+    else if (type === 'sama') sama++;
+  });
+
+  document.getElementById('agni-vishama-score').textContent = vishama;
+  document.getElementById('agni-tikshna-score').textContent = tikshna;
+  document.getElementById('agni-manda-score').textContent = manda;
+  document.getElementById('agni-sama-score').textContent = sama;
+
+  const allParamsSelected = Object.values(agniSelections).every(v => v !== null);
+  document.getElementById('agni-complete-btn').disabled = !allParamsSelected;
+
+  let dominantType = 'Sama Agni';
+  let maxScore = Math.max(vishama, tikshna, manda, sama);
+  if (maxScore === vishama) dominantType = 'Viṣama Agni (Vata Dūṣṭi)';
+  else if (maxScore === tikshna) dominantType = 'Tīkṣṇa Agni (Pitta Dūṣṭi)';
+  else if (maxScore === manda) dominantType = 'Manda Agni (Kapha Dūṣṭi)';
+  else if (maxScore === sama) dominantType = 'Sama Agni (Balanced)';
+
+  document.getElementById('agni-results').innerHTML = `<p>Dominant Agni Type: <strong>${dominantType}</strong></p>`;
 }
 
-function updateProgress() {
-    const completed = Object.values(assessmentData.completed).filter(Boolean).length;
-    const progressPercent = (completed / 4) * 100;
-    
-    document.getElementById('progressFill').style.width = progressPercent + '%';
-    
-    // Update status message
-    const statusDiv = document.getElementById('completionStatus');
-    if (completed === 4) {
-        statusDiv.className = 'status-message status-success';
-        statusDiv.innerHTML = '<strong>🎉 All Assessments Complete!</strong> Click below to view your comprehensive report.';
-        statusDiv.style.display = 'block';
-        
-        // Add final report button
-        if (!document.getElementById('final-report-btn')) {
-            const reportBtn = document.createElement('button');
-            reportBtn.id = 'final-report-btn';
-            reportBtn.className = 'btn btn-primary';
-            reportBtn.style.margin = '15px auto';
-            reportBtn.style.display = 'block';
-            reportBtn.innerHTML = '📋 Generate Final Report';
-            reportBtn.onclick = () => showPage('report-page');
-            statusDiv.appendChild(reportBtn);
-        }
-    } else if (completed > 0) {
-        statusDiv.className = 'status-message status-info';
-        statusDiv.innerHTML = `<strong>Progress:</strong> ${completed}/4 assessments completed. Continue with the next available pillar.`;
-        statusDiv.style.display = 'block';
-    } else {
-        statusDiv.style.display = 'none';
-    }
+document.querySelectorAll('[data-pillar="agni"]').forEach(cell => {
+  cell.addEventListener('click', () => {
+    const parameter = cell.getAttribute('data-parameter');
+    const type = cell.getAttribute('data-type');
+
+    document.querySelectorAll(`[data-pillar="agni"][data-parameter="${parameter}"]`)
+      .forEach(c => c.classList.remove('selected'));
+
+    cell.classList.add('selected');
+    agniSelections[parameter] = type;
+    updateAgniScores();
+  });
+});
+
+// ======================= DOSHA DUSTI ASSESSMENT =======================
+const doshaSelections = { vata: {}, pitta: {}, kapha: {} };
+
+function interpretDoshaSeverity(score) {
+  if (score <= 5) return `<span class="severity-indicator normal">Normal</span>`;
+  if (score <= 10) return `<span class="severity-indicator mild">Mild</span>`;
+  if (score <= 15) return `<span class="severity-indicator moderate">Moderate</span>`;
+  return `<span class="severity-indicator severe">Severe</span>`;
 }
 
-function checkAllComplete() {
-    const allComplete = Object.values(assessmentData.completed).every(Boolean);
-    if (allComplete) {
-        updateProgress();
-        generateFinalReport();
-    }
+document.querySelectorAll('[data-dosha]').forEach(cell => {
+  cell.addEventListener('click', () => {
+    const dosha = cell.getAttribute('data-dosha');
+    const parameter = cell.getAttribute('data-parameter');
+    const score = parseInt(cell.getAttribute('data-score'));
+
+    document.querySelectorAll(`[data-dosha="${dosha}"][data-parameter="${parameter}"]`)
+      .forEach(c => c.classList.remove('selected'));
+
+    cell.classList.add('selected');
+    doshaSelections[dosha][parameter] = score;
+    updateDoshaScores();
+  });
+});
+
+function updateDoshaScores() {
+  const vataScore = Object.values(doshaSelections.vata).reduce((a, b) => a + b, 0);
+  const pittaScore = Object.values(doshaSelections.pitta).reduce((a, b) => a + b, 0);
+  const kaphaScore = Object.values(doshaSelections.kapha).reduce((a, b) => a + b, 0);
+
+  document.getElementById('vata-score').textContent = vataScore;
+  document.getElementById('pitta-score').textContent = pittaScore;
+  document.getElementById('kapha-score').textContent = kaphaScore;
+
+  const totalSelected = Object.keys(doshaSelections.vata).length +
+                        Object.keys(doshaSelections.pitta).length +
+                        Object.keys(doshaSelections.kapha).length;
+  const allParamsCompleted = totalSelected === 30;
+
+  document.getElementById('dosha-complete-btn').disabled = !allParamsCompleted;
+
+  // Find dominant dosha
+  let dominantDosha = 'Balanced';
+  let maxScore = Math.max(vataScore, pittaScore, kaphaScore);
+  if (maxScore === vataScore) dominantDosha = 'Vata Dūṣṭi Dominant';
+  else if (maxScore === pittaScore) dominantDosha = 'Pitta Dūṣṭi Dominant';
+  else if (maxScore === kaphaScore) dominantDosha = 'Kapha Dūṣṭi Dominant';
+
+  let resultsHTML = `
+    <p><strong>Vata:</strong> ${interpretDoshaSeverity(vataScore)}</p>
+    <p><strong>Pitta:</strong> ${interpretDoshaSeverity(pittaScore)}</p>
+    <p><strong>Kapha:</strong> ${interpretDoshaSeverity(kaphaScore)}</p>
+    <p><strong>Dominant Dosha:</strong> ${dominantDosha}</p>
+  `;
+  document.getElementById('dosha-results').innerHTML = resultsHTML;
 }
 
-function generateFinalReport() {
-    const reportContent = `
-        <div class="patient-info" style="background: #f9f9f9; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-            <h4>Patient Information</h4>
-            <p><strong>Name:</strong> ${assessmentData.patient.name}</p>
-            <p><strong>Age/Sex:</strong> ${assessmentData.patient.ageSex}</p>
-            <p><strong>Date:</strong> ${assessmentData.patient.assessmentDate}</p>
-            <p><strong>Chief Complaints:</strong> ${assessmentData.patient.complaints}</p>
-        </div>
-        
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
-            <div class="pillar-summary">
-                <p>Vishama: ${assessmentData.agni.vishama} | Tikshna: ${assessmentData.agni.tikshna}</p>
-                <p>Manda: ${assessmentData.agni.manda} | Sama: ${assessmentData.agni.sama}</p>
-                <p>Total Dusti: ${assessmentData.agni.vishama + assessmentData.agni.tikshna + assessmentData.agni.manda}/8</p>
-            </div>
-            
-            <div class="pillar-summary">
-                <h5>⚖️ Dosha Assessment</h5>
-                <p>Vata: ${assessmentData.dosha.vata}/20</p>
-                <p>Pitta: ${assessmentData.dosha.pitta}/20</p>
-                <p>Kapha: ${assessmentData.dosha.kapha}/20</p>
-            </div>
-            
-            <div class="pillar-summary">
-                <h5>🧬 Dhatu Assessment</h5>
-                <p><em>Framework completed</em></p>
-                <p>Ready for detailed implementation</p>
-            </div>
-            
-            <div class="pillar-summary">
-                <h5>🌊 Srotas Assessment</h5>
-                <p><em>Framework completed</em></p>
-                <p>Ready for detailed implementation</p>
-            </div>
-        </div>
-        
-        <div style="margin-top: 30px; padding: 20px; background: #e8f4fd; border-radius: 10px;">
-            <h4>Clinical Summary</h4>
-            <p>This comprehensive 4-pillar assessment provides a systematic evaluation of the patient's constitutional state and pathological patterns according to classical Ayurvedic principles.</p>
-            <p><strong>Recommendations:</strong> Based on the assessment results, appropriate treatment protocols can be designed focusing on the dominant imbalances identified.</p>
-        </div>
-    `;
-    
-    document.getElementById('summary-results').innerHTML = reportContent;
-}
-
-// Print and export functions
+// ======================= REPORT, RESET, PRINT =======================
 function printFinalReport() {
-    const printContent = generatePrintableReport();
-    const printWindow = window.open('', '_blank');
-    
-    printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>4-Pillar Ayurvedic Assessment Report</title>
-            <style>
-                body { 
-                    font-family: Arial, sans-serif; 
-                    margin: 20px; 
-                    line-height: 1.6; 
-                }
-                .header { 
-                    text-align: center; 
-                    border-bottom: 3px solid #333; 
-                    padding-bottom: 20px; 
-                    margin-bottom: 30px; 
-                }
-                .section { 
-                    margin-bottom: 25px; 
-                    page-break-inside: avoid;
-                }
-                .section h3 { 
-                    background: #f0f0f0; 
-                    padding: 10px; 
-                    margin: 0 0 15px 0; 
-                    border-left: 5px solid #667eea;
-                }
-                .patient-info { 
-                    background: #f9f9f9; 
-                    padding: 15px; 
-                    border: 1px solid #ddd; 
-                    border-radius: 5px;
-                }
-                .score-grid {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                    gap: 15px;
-                    margin: 15px 0;
-                }
-                .score-item {
-                    background: #f8f9fa;
-                    padding: 10px;
-                    border-radius: 5px;
-                    border: 1px solid #dee2e6;
-                }
-                .summary {
-                    background: #e8f4fd;
-                    padding: 20px;
-                    border-radius: 5px;
-                    margin-top: 20px;
-                }
-                @media print {
-                    .no-print { display: none; }
-                    body { margin: 0; }
-                }
-            </style>
-        </head>
-        <body>
-            ${printContent}
-        </body>
-        </html>
-    `);
-    
-    printWindow.document.close();
-    
-    // Wait for content to load then print
-    setTimeout(() => {
-        printWindow.print();
-    }, 500);
+  window.print();
 }
 
-function generatePrintableReport() {
-    const patient = assessmentData.patient;
-    const agniTotal = assessmentData.agni.vishama + assessmentData.agni.tikshna + assessmentData.agni.manda;
-    
-    return `
-        <div class="header">
-            <h1>4-PILLAR AYURVEDIC ASSESSMENT REPORT</h1>
-            <p><strong>Dr. Prakash Kumbar</strong></p>
-            <p>Date of Assessment: ${patient.assessmentDate || new Date().toLocaleDateString()}</p>
-        </div>
-        
-        <div class="section">
-            <h3>📋 Patient Information</h3>
-            <div class="patient-info">
-                <div class="score-grid">
-                    <div><strong>Name:</strong> ${patient.name || 'N/A'}</div>
-                    <div><strong>Age/Sex:</strong> ${patient.ageSex || 'N/A'}</div>
-                    <div><strong>Patient ID:</strong> ${patient.patientId || 'N/A'}</div>
-                    <div><strong>Referred By:</strong> ${patient.referredBy || 'N/A'}</div>
-                </div>
-                <p><strong>Chief Complaints:</strong> ${patient.complaints || 'N/A'}</p>
-                <p><strong>Past History:</strong> ${patient.pastHistory || 'N/A'}</p>
-                <p><strong>Additional Points:</strong> ${patient.additionalPoints || 'N/A'}</p>
-            </div>
-        </div>
-        
-        <div class="section">
-            <h3>🔥 PILLAR 1: Agni Dusti Assessment</h3>
-            <div class="score-grid">
-                <div class="score-item">
-                    <strong>Vishama Agni (Vata):</strong> ${assessmentData.agni.vishama}
-                </div>
-                <div class="score-item">
-                    <strong>Tikshna Agni (Pitta):</strong> ${assessmentData.agni.tikshna}
-                </div>
-                <div class="score-item">
-                    <strong>Manda Agni (Kapha):</strong> ${assessmentData.agni.manda}
-                </div>
-                <div class="score-item">
-                    <strong>Sama Agni (Balanced):</strong> ${assessmentData.agni.sama}
-                </div>
-            </div>
-            <p><strong>Total Dusti Score:</strong> ${agniTotal}/8</p>
-            <p><strong>Assessment:</strong> ${getSeverityText(agniTotal, 'agni')}</p>
-        </div>
-        
-        <div class="section">
-            <h3>⚖️ PILLAR 2: Dosha Dusti Assessment</h3>
-            <div class="score-grid">
-                <div class="score-item">
-                    <strong>Vata Dosha:</strong> ${assessmentData.dosha.vata}/20<br>
-                    <small>${getDoshaSeverityText(assessmentData.dosha.vata)}</small>
-                </div>
-                <div class="score-item">
-                    <strong>Pitta Dosha:</strong> ${assessmentData.dosha.pitta}/20<br>
-                    <small>${getDoshaSeverityText(assessmentData.dosha.pitta)}</small>
-                </div>
-                <div class="score-item">
-                    <strong>Kapha Dosha:</strong> ${assessmentData.dosha.kapha}/20<br>
-                    <small>${getDoshaSeverityText(assessmentData.dosha.kapha)}</small>
-                </div>
-            </div>
-        </div>
-        
-        <div class="section">
-            <h3>🧬 PILLAR 3: Dhatu Dusti Assessment</h3>
-            <p><em>Framework Assessment Completed</em></p>
-            <p>Detailed evaluation of all 7 dhatus (Rasa, Rakta, Mamsa, Meda, Asthi, Majja, Shukra) for both Kshaya and Vriddhi symptoms.</p>
-        </div>
-        
-        <div class="section">
-            <h3>🌊 PILLAR 4: Sroto Dusti Assessment</h3>
-            <p><em>Framework Assessment Completed</em></p>
-            <p>Systematic evaluation of all 9 srotas based on classical lakshanas of dushti.</p>
-        </div>
-        
-        <div class="summary">
-            <h3>📊 Clinical Summary & Recommendations</h3>
-            <p><strong>Assessment Overview:</strong> This comprehensive 4-pillar assessment provides a systematic evaluation of the patient's constitutional state and pathological patterns according to classical Ayurvedic principles.</p>
-            
-            <p><strong>Key Findings:</strong></p>
-            <ul>
-                <li>Agni Assessment: ${getSeverityText(agniTotal, 'agni')}</li>
-                <li>Dominant Dosha: ${getDominantDosha()}</li>
-                <li>Constitutional Pattern: Based on current imbalances</li>
-            </ul>
-            
-            <p><strong>Recommendations:</strong> Treatment protocols should focus on balancing the identified imbalances through appropriate Panchakarma procedures, dietary modifications, lifestyle changes, and herbal formulations as per classical Ayurvedic guidelines.</p>
-            
-            <p><strong>Follow-up:</strong> Regular monitoring and reassessment recommended to track progress and adjust treatment as needed.</p>
-        </div>
-        
-        <div style="margin-top: 40px; text-align: center; font-size: 12px; color: #666;">
-            <p>Generated by 4-Pillar Ayurvedic Assessment System | Dr. Prakash Kumbar</p>
-            <p>This report is based on classical Ayurvedic assessment methods and should be interpreted by qualified practitioners.</p>
-        </div>
-    `;
-}
-
-// Helper functions for report generation
-function getSeverityText(score, type) {
-    if (type === 'agni') {
-        if (score === 0) return 'Sama Agni (Balanced digestive fire)';
-        if (score <= 4) return 'Mild Agni Dusti (Minor digestive imbalance)';
-        if (score <= 6) return 'Moderate Agni Dusti (Significant digestive issues)';
-        return 'Severe Agni Dusti (Major digestive dysfunction)';
-    }
-    return 'Assessment completed';
-}
-
-function getDoshaSeverityText(score) {
-    if (score <= 4) return 'No significant dushti';
-    if (score <= 9) return 'Mild dushti';
-    if (score <= 14) return 'Moderate dushti';
-    if (score <= 20) return 'Severe dushti';
-    return 'Assessment incomplete';
-}
-
-function getDominantDosha() {
-    const doshas = ['vata', 'pitta', 'kapha'];
-    let maxScore = 0;
-    let dominant = 'Balanced';
-    
-    doshas.forEach(dosha => {
-        if (assessmentData.dosha[dosha] > maxScore) {
-            maxScore = assessmentData.dosha[dosha];
-            dominant = dosha.charAt(0).toUpperCase() + dosha.slice(1);
-        }
-    });
-    
-    return maxScore > 0 ? `${dominant} (Score: ${maxScore})` : 'Balanced state';
-}
-
-// Save assessment data
-function saveAssessmentData() {
-    // Collect all patient data
-    savePatientData();
-    
-    // Create comprehensive data object
-    const fullAssessment = {
-        timestamp: new Date().toISOString(),
-        patient: assessmentData.patient,
-        assessments: {
-            agni: {
-                scores: assessmentData.agni,
-                total: assessmentData.agni.vishama + assessmentData.agni.tikshna + assessmentData.agni.manda,
-                completed: assessmentData.completed.agni
-            },
-            dosha: {
-                scores: assessmentData.dosha,
-                completed: assessmentData.completed.dosha
-            },
-            dhatu: {
-                completed: assessmentData.completed.dhatu
-            },
-            srotas: {
-                completed: assessmentData.completed.srotas
-            }
-        },
-        selections: assessmentData.selections
-    };
-    
-    // Validate required fields
-    if (!assessmentData.patient.name || !assessmentData.patient.ageSex || !assessmentData.patient.complaints) {
-        alert('Please fill in all required patient information fields.');
-        return false;
-    }
-    
-    // Create and download JSON file
-    const assessmentJSON = JSON.stringify(fullAssessment, null, 2);
-    const blob = new Blob([assessmentJSON], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${assessmentData.patient.name.replace(/\s+/g, '_')}_4Pillar_Assessment_${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    alert('Assessment data saved successfully!');
-    return true;
-}
-
-// Reset functions
 function resetAllAssessments() {
-    if (confirm('⚠️ Are you sure you want to reset ALL assessment data?\n\nThis will permanently delete:\n• All patient information\n• All assessment scores\n• All selections\n\nThis action cannot be undone!')) {
-        
-        // Reset all data
-        assessmentData = {
-            patient: {},
-            agni: { vishama: 0, tikshna: 0, manda: 0, sama: 0 },
-            dosha: { vata: 0, pitta: 0, kapha: 0 },
-            dhatu: {},
-            srotas: {},
-            selections: {},
-            completed: { agni: false, dosha: false, dhatu: false, srotas: false }
-        };
-        
-        // Clear all form inputs
-        document.querySelectorAll('input, textarea').forEach(input => {
-            input.value = '';
-        });
-        
-        // Reset date to today
-        document.getElementById('assessmentDate').valueAsDate = new Date();
-        
-        // Remove all selections
-        document.querySelectorAll('.clickable-cell').forEach(cell => {
-            cell.classList.remove('selected');
-        });
-        
-        // Reset all button states
-        updatePillarButtons();
-        
-        // Reset displays
-        updateAgniDisplay();
-        updateDoshaDisplay();
-        
-        // Clear result displays
-        document.getElementById('agni-results').innerHTML = 'Complete the assessment to see results...';
-        document.getElementById('dosha-results').innerHTML = 'Complete Vata assessment first, then Pitta and Kapha will appear...';
-        document.getElementById('dhatu-results').innerHTML = 'Dhatu assessment framework ready for implementation...';
-        document.getElementById('srotas-results').innerHTML = 'Srotas assessment framework ready for implementation...';
-        
-        // Update progress
-        updateProgress();
-        
-        // Return to main page
-        goToMain();
-        
-        // Show success message
-        setTimeout(() => {
-            alert('✅ All assessment data has been reset successfully!\n\nYou can now start a new assessment.');
-        }, 500);
-    }
+  if (!confirm("Are you sure you want to reset all assessments?")) return;
+  location.reload();
 }
-
-function resetCurrentPillar() {
-    const currentPage = document.querySelector('.page.active').id;
-    const pillar = currentPage.replace('-page', '');
+</script>
     
-    if (confirm(`Reset ${pillar.toUpperCase()} assessment data?`)) {
-        // Reset specific pillar data
-        if (pillar === 'agni') {
-            assessmentData.agni = { vishama: 0, tikshna: 0, manda: 0, sama: 0 };
-            // Clear agni selections
-            Object.keys(assessmentData.selections).forEach(key => {
-                if (key.startsWith('agni_')) {
-                    delete assessmentData.selections[key];
-                }
-            });
-            // Remove visual selections
-            document.querySelectorAll('[data-pillar="agni"]').forEach(cell => {
-                cell.classList.remove('selected');
-            });
-            updateAgniDisplay();
-            checkAgniCompletion();
-        } else if (pillar === 'dosha') {
-            assessmentData.dosha = { vata: 0, pitta: 0, kapha: 0 };
-            // Clear dosha selections
-            Object.keys(assessmentData.selections).forEach(key => {
-                if (key.startsWith('dosha_')) {
-                    delete assessmentData.selections[key];
-                }
-            });
-            // Remove visual selections
-            document.querySelectorAll('[data-pillar="dosha"]').forEach(cell => {
-                cell.classList.remove('selected');
-            });
-            updateDoshaDisplay();
-            checkDoshaCompletion();
-        }
-        
-        // Mark as not completed
-        assessmentData.completed[pillar] = false;
-        updatePillarButtons();
-        updateProgress();
-        
-        alert(`${pillar.toUpperCase()} assessment has been reset.`);
-    }
-}
-
-// Export/Import functions
-function exportAssessment() {
-    if (saveAssessmentData()) {
-        console.log('Assessment exported successfully');
-    }
-}
-
-function importAssessment() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
-    input.onchange = function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const importedData = JSON.parse(e.target.result);
-                    
-                    // Validate data structure
-                    if (importedData.patient && importedData.assessments) {
-                        // Confirm import
-                        if (confirm(`Import assessment data for ${importedData.patient.name}?\n\nThis will overwrite current data.`)) {
-                            // Load imported data
-                            assessmentData.patient = importedData.patient;
-                            assessmentData.agni = importedData.assessments.agni.scores;
-                            assessmentData.dosha = importedData.assessments.dosha.scores;
-                            assessmentData.completed = {
-                                agni: importedData.assessments.agni.completed,
-                                dosha: importedData.assessments.dosha.completed,
-                                dhatu: importedData.assessments.dhatu.completed,
-                                srotas: importedData.assessments.srotas.completed
-                            };
-                            assessmentData.selections = importedData.selections || {};
-                            
-                            // Update form fields
-                            document.getElementById('patientName').value = assessmentData.patient.name || '';
-                            document.getElementById('ageSex').value = assessmentData.patient.ageSex || '';
-                            document.getElementById('patientId').value = assessmentData.patient.patientId || '';
-                            document.getElementById('assessmentDate').value = assessmentData.patient.assessmentDate || '';
-                            document.getElementById('complaints').value = assessmentData.patient.complaints || '';
-                            document.getElementById('pastHistory').value = assessmentData.patient.pastHistory || '';
-                            document.getElementById('additionalPoints').value = assessmentData.patient.additionalPoints || '';
-                            document.getElementById('referredBy').value = assessmentData.patient.referredBy || '';
-                            
-                            // Restore visual selections
-                            restoreSelections();
-                            
-                            // Update displays
-                            updatePillarButtons();
-                            updateProgress();
-                            updateAgniDisplay();
-                            updateDoshaDisplay();
-                            
-                            alert('Assessment data imported successfully!');
-                        }
-                    } else {
-                        alert('Invalid file format. Please select a valid assessment file.');
-                    }
-                } catch (error) {
-                    alert('Error reading file. Please check the file format.');
-                    console.error('Import error:', error);
-                }
-            };
-            reader.readAsText(file);
-        }
-    };
-    input.click();
-}
-
-function restoreSelections() {
-    // Restore visual selections based on saved selections
-    Object.keys(assessmentData.selections).forEach(key => {
-        const value = assessmentData.selections[key];
-        
-        if (key.startsWith('agni_')) {
-            const parameter = key.replace('agni_', '');
-            const cell = document.querySelector(`[data-pillar="agni"][data-parameter="${parameter}"][data-type="${value}"]`);
-            if (cell) cell.classList.add('selected');
-        } else if (key.startsWith('dosha_')) {
-            const parts = key.split('_');
-            const dosha = parts[1];
-            const parameter = parts[2];
-            const cell = document.querySelector(`[data-pillar="dosha"][data-dosha="${dosha}"][data-parameter="${parameter}"][data-score="${value}"]`);
-            if (cell) cell.classList.add('selected');
-        }
-    });
-}
-
-// Add keyboard shortcuts
-document.addEventListener('keydown', function(e) {
-    // Ctrl+S to save
-    if (e.ctrlKey && e.key === 's') {
-        e.preventDefault();
-        saveAssessmentData();
-    }
-    
-    // Ctrl+P to print (when on report page)
-    if (e.ctrlKey && e.key === 'p') {
-        const currentPage = document.querySelector('.page.active').id;
-        if (currentPage === 'report-page') {
-            e.preventDefault();
-            printFinalReport();
-        }
-    }
-    
-    // Escape to go back to main
-    if (e.key === 'Escape') {
-        goToMain();
-    }
-});
-
-// Add auto-save functionality
-let autoSaveTimer;
-function startAutoSave() {
-    clearTimeout(autoSaveTimer);
-    autoSaveTimer = setTimeout(() => {
-        if (assessmentData.patient.name) {
-            // Auto-save to localStorage
-            localStorage.setItem('ayurveda_assessment_autosave', JSON.stringify(assessmentData));
-        }
-    }, 30000); // Auto-save every 30 seconds
-}
-
-// Load auto-saved data on startup
-document.addEventListener('DOMContentLoaded', function() {
-    const autoSaved = localStorage.getItem('ayurveda_assessment_autosave');
-    if (autoSaved) {
-        try {
-            const saved = JSON.parse(autoSaved);
-            if (saved.patient && saved.patient.name) {
-                if (confirm(`Found auto-saved data for ${saved.patient.name}. Would you like to restore it?`)) {
-                    // Restore auto-saved data
-                    assessmentData = saved;
-                    restoreSelections();
-                    updatePillarButtons();
-                    updateProgress();
-                    updateAgniDisplay();
-                    updateDoshaDisplay();
-                }
-            }
-        } catch (e) {
-            console.log('Could not restore auto-saved data');
-        }
-    }
-});
-
-// Initialize auto-save when form is filled
-document.addEventListener('input', startAutoSave);
-document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('clickable-cell')) {
-        startAutoSave();
-    }
-});
-
-console.log("✅ 4-Pillar Assessment System - Part 2 JavaScript loaded successfully!");
-console.log("🔧 Features loaded: Patient records, Agni assessment, Dosha assessment, Progress tracking, Export/Import, Auto-save");
-console.log("📋 Ready for assessment! Fill in patient details and start with Pillar 1.");
-        
-    </script>
 </body>
 </html>
