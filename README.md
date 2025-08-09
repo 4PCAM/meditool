@@ -39,3 +39,43 @@ It evaluates a patient across **four key pillars**:
 
 ## 📂 Project Structure
 
+---
+
+## 🚀 How It Works
+
+### 1. **Patient Information**
+Before starting, the user must fill:
+- Patient Name
+- Age/Sex
+- Chief Complaints  
+(If incomplete, Pillar 1 remains locked)
+
+### 2. **Pillar Navigation**
+- Start with **Agni Dusti**  
+- Completing a pillar unlocks the next one
+- Pillar 4 completion generates the **final report**
+
+### 3. **Agni Dusti**
+- Click on the symptom cell that best describes the patient
+- One selection per parameter
+- Scores update automatically
+
+### 4. **Dosha Dusti (Enhanced)**
+- For each symptom:
+  - Click severity: **0**, **1**, or **2**
+  - Color-coded severity indicators
+  - Live scores for **Vata**, **Pitta**, **Kapha**
+  - “Complete Assessment” button activates only when all parameters are scored
+
+### 5. **Final Report**
+- Shows all scores and interpretations for Agni & Dosha (Dhatu and Srotas pending full implementation)
+- Ready to print
+
+---
+
+## 🛠️ Installation & Usage
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/meditool.git
+
