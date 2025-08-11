@@ -1214,51 +1214,71 @@ function handleDoshaSeverityClick(tdCell, btn) {
     const dosha = tdCell.getAttribute('data-dosha');
     const parameter = tdCell.getAttribute('data-parameter');
     const score = parseInt(btn.dataset.score);
+    const selectionKey = `dosha_${dosha}_${parameter}`;
 
     if (!dosha || !parameter || isNaN(score)) return;
 
-    // deselect other buttons in this cell
+    // Check if clicking the same already selected button → deselect
+    const alreadySelected = btn.classList.contains('severity-selected');
+    if (alreadySelected) {
+        // Remove highlight
+        btn.classList.remove('severity-selected');
+        btn.style.outline = 'none';
+        tdCell.classList.remove('selected');
+
+        // Remove score from totals if Vata/Pitta/Kapha
+        if (dosha !== 'nad' && assessmentData.selections[selectionKey] !== undefined) {
+            const prev = parseInt(assessmentData.selections[selectionKey]);
+            if (!isNaN(prev)) {
+                assessmentData.dosha[dosha] -= prev;
+            }
+        }
+
+        // Delete selection from storage
+        delete assessmentData.selections[selectionKey];
+
+        // Update display & completion
+        updateDoshaDisplay();
+        checkDoshaCompletion();
+        startAutoSave();
+        return; // End here for deselection
+    }
+
+    // --- Normal selection process ---
+    // Deselect other buttons in this cell
     tdCell.querySelectorAll('.dosha-severity-btn').forEach(b => {
         b.classList.remove('severity-selected');
         b.style.outline = 'none';
-        // lower opacity for unselected to indicate state
         b.style.opacity = '0.9';
     });
 
-    // mark clicked
+    // Mark clicked button
     btn.classList.add('severity-selected');
     btn.style.outline = '3px solid rgba(102,126,234,0.25)';
     btn.style.opacity = '1';
-
-    // mark cell selected visually
     tdCell.classList.add('selected');
 
-    // Save selection into assessmentData.selections in the same key format used elsewhere
-    const selectionKey = `dosha_${dosha}_${parameter}`;
-
-    // If previous selection exists, adjust assessmentData.dosha by removing previous score
-    if (assessmentData.selections[selectionKey] !== undefined) {
-        const prev = parseInt(assessmentData.selections[selectionKey]);
-        if (!isNaN(prev)) {
-            assessmentData.dosha[dosha] -= prev;
+    if (dosha !== 'nad') {
+        // Remove previous score from totals
+        if (assessmentData.selections[selectionKey] !== undefined) {
+            const prev = parseInt(assessmentData.selections[selectionKey]);
+            if (!isNaN(prev)) {
+                assessmentData.dosha[dosha] -= prev;
+            }
         }
+        // Store and count only Vata/Pitta/Kapha scores
+        assessmentData.selections[selectionKey] = score;
+        assessmentData.dosha[dosha] = (assessmentData.dosha[dosha] || 0) + score;
+    } else {
+        // NAD — store selection but don't count in totals
+        assessmentData.selections[selectionKey] = score;
     }
 
-    // Store new selection
-    assessmentData.selections[selectionKey] = score;
-    // Add to dosha totals
-    assessmentData.dosha[dosha] = (assessmentData.dosha[dosha] || 0) + score;
-
-    // Update visible scorecards and results
+    // Update display & completion
     updateDoshaDisplay();
-
-    // update dosha completion check
     checkDoshaCompletion();
-
-    // trigger auto-save timer
     startAutoSave();
 }
-
 function updateDoshaDisplay() {
     // update numeric score cards
     const vEl = document.getElementById('vata-score');
@@ -1308,18 +1328,26 @@ function updateDoshaDisplay() {
 }
 
 function checkDoshaCompletion() {
-    // Count selected parameters per dosha by checking assessmentData.selections keys
-    const vataParams = ['agni','mala','mutra','sveda','sparsha','bala','manasika','gati','roopam','jihva'];
-    const pittaParams = vataParams.slice(); // same list
-    const kaphaParams = vataParams.slice();
+    // All parameter names for the rows
+    const parameters = ['agni','mala','mutra','sveda','sparsha','bala','manasika','gati','roopam','jihva'];
 
-    const vCount = vataParams.filter(param => assessmentData.selections[`dosha_vata_${param}`] !== undefined).length;
-    const pCount = pittaParams.filter(param => assessmentData.selections[`dosha_pitta_${param}`] !== undefined).length;
-    const kCount = kaphaParams.filter(param => assessmentData.selections[`dosha_kapha_${param}`] !== undefined).length;
+    // Count completed rows (at least one selection per row, NAD included)
+    let completedRows = 0;
+    parameters.forEach(param => {
+        if (
+            assessmentData.selections[`dosha_vata_${param}`] !== undefined ||
+            assessmentData.selections[`dosha_pitta_${param}`] !== undefined ||
+            assessmentData.selections[`dosha_kapha_${param}`] !== undefined ||
+            assessmentData.selections[`dosha_nad_${param}`] !== undefined
+        ) {
+            completedRows++;
+        }
+    });
 
     const completeBtn = document.getElementById('dosha-complete-btn');
 
-    if (vCount === 10 && pCount === 10 && kCount === 10) {
+    // If all 10 rows have at least one selection, allow completion
+    if (completedRows === parameters.length) {
         if (completeBtn) {
             completeBtn.disabled = false;
             completeBtn.style.background = 'linear-gradient(135deg, #00b894, #00a085)';
@@ -1331,15 +1359,14 @@ function checkDoshaCompletion() {
         }
     }
 
-    // Update progress message: show counts for the user
+    // Progress feedback for user
     const doshaResultsEl = document.getElementById('dosha-results');
-    if (doshaResultsEl && (vCount < 10 || pCount < 10 || kCount < 10)) {
+    if (doshaResultsEl && completedRows < parameters.length) {
         doshaResultsEl.innerHTML = `
-            <p><strong>Progress:</strong> Vata ${vCount}/10, Pitta ${pCount}/10, Kapha ${kCount}/10</p>
-            <p><em>Complete all parameters for each dosha to enable finalization.</em></p>
+            <p><strong>Progress:</strong> ${completedRows}/10 rows completed</p>
+            <p><em>Please make at least one selection in each row to complete the assessment.</em></p>
         `;
     } else {
-        // if completed, ensure display shows full severity (updateDoshaDisplay will set it)
         updateDoshaDisplay();
     }
 }
