@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dhatu Dusti Assessment - 4-PCAM</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .assessment-header {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .assessment-header h3 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+
+        .instructions {
+            background: #e8f4fd;
+            color: #2d3436;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border-left: 5px solid #74b9ff;
+            font-weight: 500;
+        }
+
+        .patient-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .dhatu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .dhatu-card {
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .dhatu-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+        }
+
+        .dhatu-header {
+            background: linear-gradient(135deg, #a8edea, #fed6e3);
+            padding: 15px;
+            text-align: center;
+            font-weight: 600;
+            color: #2d3436;
+        }
+
+        .dhatu-content {
+            padding: 20px;
+        }
+
+        .dhatu-symptoms {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .symptom-category {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .symptom-category h5 {
+            color: #2d3436;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .symptom-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .symptom-item {
+            background: #fff;
+            margin: 5px 0;
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 13px;
+        }
+
+        .symptom-item:hover {
+            background: #e3f2fd;
+            border-color: #667eea;
+        }
+
+        .symptom-item.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .severity-controls {
+            display: none;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 8px;
+        }
+
+        .symptom-item.selected .severity-controls {
+            display: flex;
+        }
+
+        .severity-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.3s;
+        }
+
+        .severity-btn:hover, .severity-btn.active {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+        }
+
+        .dhatu-scores {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .score-display {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .score-value {
+            font-size: 18px;
+            font-weight: bold;
+            display: block;
+        }
+
+        .selected-dhatu-symptoms {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #ffc107;
+        }
+
+        .selected-dhatu-symptoms h5 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .dhatu-symptom-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .dhatu-summary-card {
+            background: #fff;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #ffeaa7;
+        }
+
+        .dhatu-summary-card h6 {
+            color: #856404;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .summary-symptom {
+            background: #f8f9fa;
+            padding: 6px 8px;
+            margin: 4px 0;
+            border-radius: 4px;
+            font-size: 12px;
+            border-left: 3px solid #667eea;
+        }
+
+        .results-section {
+            background: #f1f2f6;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 25px;
+        }
+
+        .results-section h4 {
+            color: #2d3436;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .severity-indicator {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin: 5px;
+            font-size: 13px;
+        }
+
+        .normal { background: #00b894; color: white; }
+        .mild { background: #fdcb6e; color: #2d3436; }
+        .moderate { background: #e17055; color: white; }
+        .severe { background: #d63031; color: white; }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00b894, #00a085);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #636e72, #2d3436);
+            color: white;
+        }
+
+        .btn:disabled {
+            background: #ddd;
+            color: #999;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        @media (max-width: 768px) {
+            .dhatu-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .dhatu-symptoms {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-buttons {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .patient-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .dhatu-symptom-summary {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧬 DHATU DUSTI ASSESSMENT</h1>
+            <p><strong>PILLAR 3 of 4-PCAM</strong></p>
+            <p>Seven Tissue Assessment for Kṣaya and Vriddhi</p>
+        </div>
+
+        <div class="content">
+            <div class="patient-info" id="patient-info">
+                <!-- Patient info will be loaded here -->
+            </div>
+
+            <div class="assessment-header">
+                <h3>🧬 PILLAR 3: DHATU DUSTI ASSESSMENT</h3>
+                <p>Each dhātu assessed for classical signs of kṣaya (depletion) and vriddhi (excess)</p>
+            </div>
+
+            <div class="instructions">
+                <strong>📋 SCORING INSTRUCTIONS:</strong> Score 0-2 per symptom (0=Normal, 1=Mild Dūṣṭi, 2=Moderate/Severe Dūṣṭi). Click on symptoms present, then select severity. Assess for both Kṣaya (depletion) and Vriddhi (excess) symptoms for each dhatu.
+            </div>
+
+            <div class="dhatu-grid">
+                <!-- RASA DHATU -->
+                <div class="dhatu-card">
+                    <div class="dhatu-header">
+                        <h4>🩸 RASA DHATU (Plasma/Lymph)</h4>
+                    </div>
+                    <div class="dhatu-content">
+                        <div class="dhatu-symptoms">
+                            <div class="symptom-category">
+                                <h5>Kṣaya (Depletion)</h5>
+                                <ul class="symptom-list">
+                                    <li class="symptom-item" data-dhatu="rasa" data-type="kshaya" data-symptom="Dry skin, mouth">
+                                        Dry skin, mouth
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="rasa" data-type="kshaya" data-symptom="Fatigue, weakness">
+                                        Fatigue, weakness
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="rasa" data-type="kshaya" data-symptom="Rough, cracked skin">
+                                        Rough, cracked skin
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="rasa" data-type="kshaya" data-symptom="Intolerance to sound">
+                                        Intolerance to sound
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="symptom-category">
+                                <h5>Vriddhi (Excess)</h5>
+                                <ul class="symptom-list">
+                                    <li class="symptom-item" data-dhatu="rasa" data-type="vriddhi" data-symptom="Loss of appetite">
+                                        Loss of appetite
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="rasa" data-type="vriddhi" data-symptom="Nausea, vomiting">
+                                        Nausea, vomiting
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="rasa" data-type="vriddhi" data-symptom="Excessive salivation">
+                                        Excessive salivation
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="rasa" data-type="vriddhi" data-symptom="Heaviness, lethargy">
+                                        Heaviness, lethargy
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="dhatu-scores">
+                            <div class="score-display">
+                                <span class="score-value" id="rasa-kshaya-score">0</span>
+                                Kṣaya Score
+                            </div>
+                            <div class="score-display">
+                                <span class="score-value" id="rasa-vriddhi-score">0</span>
+                                Vriddhi Score
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RAKTA DHATU -->
+                <div class="dhatu-card">
+                    <div class="dhatu-header">
+                        <h4>❤️ RAKTA DHATU (Blood)</h4>
+                    </div>
+                    <div class="dhatu-content">
+                        <div class="dhatu-symptoms">
+                            <div class="symptom-category">
+                                <h5>Kṣaya (Depletion)</h5>
+                                <ul class="symptom-list">
+                                    <li class="symptom-item" data-dhatu="rakta" data-type="kshaya" data-symptom="Pallor, pale skin">
+                                        Pallor, pale skin
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="rakta" data-type="kshaya" data-symptom="Cold extremities">
+                                        Cold extremities
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="rakta" data-type="kshaya" data-symptom="Collapsed veins">
+                                        Collapsed veins
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="rakta" data-type="kshaya" data-symptom="Desire for sour/cold">
+                                        Desire for sour/cold
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="symptom-category">
+                                <h5>Vriddhi (Excess)</h5>
+                                <ul class="symptom-list">
+                                    <li class="symptom-item" data-dhatu="rakta" data-type="vriddhi" data-symptom="Red eyes, skin">
+                                        Red eyes, skin
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="rakta" data-type="vriddhi" data-symptom="Bleeding tendency">
+                                        Bleeding tendency
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="rakta" data-type="vriddhi" data-symptom="Skin rashes, acne">
+                                        Skin rashes, acne
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="rakta" data-type="vriddhi" data-symptom="Enlarged spleen">
+                                        Enlarged spleen
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="dhatu-scores">
+                            <div class="score-display">
+                                <span class="score-value" id="rakta-kshaya-score">0</span>
+                                Kṣaya Score
+                            </div>
+                            <div class="score-display">
+                                <span class="score-value" id="rakta-vriddhi-score">0</span>
+                                Vriddhi Score
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MAMSA DHATU -->
+                <div class="dhatu-card">
+                    <div class="dhatu-header">
+                        <h4>💪 MAMSA DHATU (Muscle)</h4>
+                    </div>
+                    <div class="dhatu-content">
+                        <div class="dhatu-symptoms">
+                            <div class="symptom-category">
+                                <h5>Kṣaya (Depletion)</h5>
+                                <ul class="symptom-list">
+                                    <li class="symptom-item" data-dhatu="mamsa" data-type="kshaya" data-symptom="Muscle wasting">
+                                        Muscle wasting
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="mamsa" data-type="kshaya" data-symptom="Thin limbs">
+                                        Thin limbs
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="mamsa" data-type="kshaya" data-symptom="Weakness in walking">
+                                        Weakness in walking
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="mamsa" data-type="kshaya" data-symptom="Fatigue on exertion">
+                                        Fatigue on exertion
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="symptom-category">
+                                <h5>Vriddhi (Excess)</h5>
+                                <ul class="symptom-list">
+                                    <li class="symptom-item" data-dhatu="mamsa" data-type="vriddhi" data-symptom="Excessive muscle growth">
+                                        Excessive muscle growth
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="mamsa" data-type="vriddhi" data-symptom="Tumors, growths">
+                                        Tumors, growths
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="mamsa" data-type="vriddhi" data-symptom="Heavy feeling in body">
+                                        Heavy feeling in body
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="mamsa" data-type="vriddhi" data-symptom="Elongated limbs">
+                                        Elongated limbs
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="dhatu-scores">
+                            <div class="score-display">
+                                <span class="score-value" id="mamsa-kshaya-score">0</span>
+                                Kṣaya Score
+                            </div>
+                            <div class="score-display">
+                                <span class="score-value" id="mamsa-vriddhi-score">0</span>
+                                Vriddhi Score
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MEDA DHATU -->
+                <div class="dhatu-card">
+                    <div class="dhatu-header">
+                        <h4>🫅 MEDA DHATU (Adipose)</h4>
+                    </div>
+                    <div class="dhatu-content">
+                        <div class="dhatu-symptoms">
+                            <div class="symptom-category">
+                                <h5>Kṣaya (Depletion)</h5>
+                                <ul class="symptom-list">
+                                    <li class="symptom-item" data-dhatu="meda" data-type="kshaya" data-symptom="Excessive thinness">
+                                        Excessive thinness
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="meda" data-type="kshaya" data-symptom="Dry, rough skin">
+                                        Dry, rough skin
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="meda" data-type="kshaya" data-symptom="Prominent veins">
+                                        Prominent veins
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="meda" data-type="kshaya" data-symptom="Enlarged spleen">
+                                        Enlarged spleen
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="symptom-category">
+                                <h5>Vriddhi (Excess)</h5>
+                                <ul class="symptom-list">
+                                    <li class="symptom-item" data-dhatu="meda" data-type="vriddhi" data-symptom="Obesity">
+                                        Obesity
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="meda" data-type="vriddhi" data-symptom="Fatty deposits">
+                                        Fatty deposits
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="meda" data-type="vriddhi" data-symptom="Breathlessness">
+                                        Breathlessness
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="meda" data-type="vriddhi" data-symptom="Sweet taste in mouth">
+                                        Sweet taste in mouth
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="dhatu-scores">
+                            <div class="score-display">
+                                <span class="score-value" id="meda-kshaya-score">0</span>
+                                Kṣaya Score
+                            </div>
+                            <div class="score-display">
+                                <span class="score-value" id="meda-vriddhi-score">0</span>
+                                Vriddhi Score
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ASTHI DHATU -->
+                <div class="dhatu-card">
+                    <div class="dhatu-header">
+                        <h4>🦴 ASTHI DHATU (Bone)</h4>
+                    </div>
+                    <div class="dhatu-content">
+                        <div class="dhatu-symptoms">
+                            <div class="symptom-category">
+                                <h5>Kṣaya (Depletion)</h5>
+                                <ul class="symptom-list">
+                                    <li class="symptom-item" data-dhatu="asthi" data-type="kshaya" data-symptom="Joint pain">
+                                        Joint pain
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="asthi" data-type="kshaya" data-symptom="Brittle nails, hair">
+                                        Brittle nails, hair
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="asthi" data-type="kshaya" data-symptom="Loose teeth">
+                                        Loose teeth
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="asthi" data-type="kshaya" data-symptom="Bone weakness">
+                                        Bone weakness
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="symptom-category">
+                                <h5>Vriddhi (Excess)</h5>
+                                <ul class="symptom-list">
+                                    <li class="symptom-item" data-dhatu="asthi" data-type="vriddhi" data-symptom="Excess bone growth">
+                                        Excess bone growth
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="asthi" data-type="vriddhi" data-symptom="Extra teeth/bones">
+                                        Extra teeth/bones
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="asthi" data-type="vriddhi" data-symptom="Bone spurs">
+                                        Bone spurs
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="asthi" data-type="vriddhi" data-symptom="Joint stiffness">
+                                        Joint stiffness
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="dhatu-scores">
+                            <div class="score-display">
+                                <span class="score-value" id="asthi-kshaya-score">0</span>
+                                Kṣaya Score
+                            </div>
+                            <div class="score-display">
+                                <span class="score-value" id="asthi-vriddhi-score">0</span>
+                                Vriddhi Score
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MAJJA DHATU -->
+                <div class="dhatu-card">
+                    <div class="dhatu-header">
+                        <h4>🧠 MAJJA DHATU (Nerve/Marrow)</h4>
+                    </div>
+                    <div class="dhatu-content">
+                        <div class="dhatu-symptoms">
+                            <div class="symptom-category">
+                                <h5>Kṣaya (Depletion)</h5>
+                                <ul class="symptom-list">
+                                    <li class="symptom-item" data-dhatu="majja" data-type="kshaya" data-symptom="Bone pain">
+                                        Bone pain
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="majja" data-type="kshaya" data-symptom="Dizziness">
+                                        Dizziness
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="majja" data-type="kshaya" data-symptom="Memory loss">
+                                        Memory loss
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="majja" data-type="kshaya" data-symptom="Joint instability">
+                                        Joint instability
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="symptom-category">
+                                <h5>Vriddhi (Excess)</h5>
+                                <ul class="symptom-list">
+                                    <li class="symptom-item" data-dhatu="majja" data-type="vriddhi" data-symptom="Heavy feeling in eyes">
+                                        Heavy feeling in eyes
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="majja" data-type="vriddhi" data-symptom="Non-healing ulcers">
+                                        Non-healing ulcers
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="majja" data-type="vriddhi" data-symptom="Joint enlargement">
+                                        Joint enlargement
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="majja" data-type="vriddhi" data-symptom="Excessive sleep">
+                                        Excessive sleep
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="dhatu-scores">
+                            <div class="score-display">
+                                <span class="score-value" id="majja-kshaya-score">0</span>
+                                Kṣaya Score
+                            </div>
+                            <div class="score-display">
+                                <span class="score-value" id="majja-vriddhi-score">0</span>
+                                Vriddhi Score
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SHUKRA DHATU -->
+                <div class="dhatu-card">
+                    <div class="dhatu-header">
+                        <h4>🌱 SHUKRA DHATU (Reproductive)</h4>
+                    </div>
+                    <div class="dhatu-content">
+                        <div class="dhatu-symptoms">
+                            <div class="symptom-category">
+                                <h5>Kṣaya (Depletion)</h5>
+                                <ul class="symptom-list">
+                                    <li class="symptom-item" data-dhatu="shukra" data-type="kshaya" data-symptom="Delayed ejaculation">
+                                        Delayed ejaculation
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="shukra" data-type="kshaya" data-symptom="Low libido">
+                                        Low libido
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="shukra" data-type="kshaya" data-symptom="Infertility">
+                                        Infertility
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="shukra" data-type="kshaya" data-symptom="Fatigue after exertion">
+                                        Fatigue after exertion
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="symptom-category">
+                                <h5>Vriddhi (Excess)</h5>
+                                <ul class="symptom-list">
+                                    <li class="symptom-item" data-dhatu="shukra" data-type="vriddhi" data-symptom="Excessive sexual desire">
+                                        Excessive sexual desire
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="shukra" data-type="vriddhi" data-symptom="Urinary stones">
+                                        Urinary stones
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="shukra" data-type="vriddhi" data-symptom="Prostatic enlargement">
+                                        Prostatic enlargement
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                    <li class="symptom-item" data-dhatu="shukra" data-type="vriddhi" data-symptom="Excessive semen production">
+                                        Excessive semen production
+                                        <div class="severity-controls">
+                                            <button class="severity-btn" data-score="1">1</button>
+                                            <button class="severity-btn" data-score="2">2</button>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="dhatu-scores">
+                            <div class="score-display">
+                                <span class="score-value" id="shukra-kshaya-score">0</span>
+                                Kṣaya Score
+                            </div>
+                            <div class="score-display">
+                                <span class="score-value" id="shukra-vriddhi-score">0</span>
+                                Vriddhi Score
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="selected-dhatu-symptoms" id="selected-symptoms" style="display: none;">
+                <h5>📋 Selected Dhatu Symptoms</h5>
+                <div class="dhatu-symptom-summary" id="symptom-summary"></div>
+            </div>
+
+            <div class="results-section">
+                <h4>📊 Dhatu Assessment Results</h4>
+                <div id="dhatu-results">Please select symptoms to view assessment results...</div>
+            </div>
+
+            <div class="nav-buttons">
+                <a href="dosha-dusti.html" class="btn btn-secondary">← Back to Dosha Assessment</a>
+                <button class="btn btn-primary" id="dhatu-complete-btn" onclick="completeDhatuAssessment()">Complete Assessment</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dhatu assessment data
+        let dhatuData = {
+            scores: {
+                rasa: { kshaya: 0, vriddhi: 0 },
+                rakta: { kshaya: 0, vriddhi: 0 },
+                mamsa: { kshaya: 0, vriddhi: 0 },
+                meda: { kshaya: 0, vriddhi: 0 },
+                asthi: { kshaya: 0, vriddhi: 0 },
+                majja: { kshaya: 0, vriddhi: 0 },
+                shukra: { kshaya: 0, vriddhi: 0 }
+            },
+            selectedSymptoms: {
+                rasa: { kshaya: [], vriddhi: [] },
+                rakta: { kshaya: [], vriddhi: [] },
+                mamsa: { kshaya: [], vriddhi: [] },
+                meda: { kshaya: [], vriddhi: [] },
+                asthi: { kshaya: [], vriddhi: [] },
+                majja: { kshaya: [], vriddhi: [] },
+                shukra: { kshaya: [], vriddhi: [] }
+            },
+            completed: false
+        };
+
+        let patientData = {};
+        let agniData = {};
+        let doshaData = {};
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPreviousData();
+            loadPreviousDhatuData();
+            addEventListeners();
+            updateDisplay();
+        });
+
+        function loadPreviousData() {
+            // Load combined data
+            const combined = localStorage.getItem('4pcam_combined_data');
+            if (combined) {
+                try {
+                    const data = JSON.parse(combined);
+                    patientData = data.patient || {};
+                    agniData = data.agni || {};
+                    doshaData = data.dosha || {};
+                    displayPatientInfo();
+                } catch (e) {
+                    console.log('Could not load combined data');
+                }
+            }
+
+            // If prerequisites not completed, redirect
+            if (!patientData.name || !agniData.completed || !doshaData.completed) {
+                alert('Please complete Patient Information, Agni, and Dosha assessments first.');
+                window.location.href = 'patient-info.html';
+            }
+        }
+
+        function displayPatientInfo() {
+            const infoEl = document.getElementById('patient-info');
+            if (patientData.name) {
+                const agniStatus = getAgniStatus();
+                const doshaStatus = getDoshaStatus();
+                
+                infoEl.innerHTML = `
+                    <div><strong>Patient:</strong> ${patientData.name}</div>
+                    <div><strong>Age/Sex:</strong> ${patientData.ageSex}</div>
+                    <div><strong>Date:</strong> ${patientData.assessmentDate}</div>
+                    <div><strong>Agni:</strong> ${agniStatus}</div>
+                    <div><strong>Dosha:</strong> ${doshaStatus}</div>
+                `;
+            }
+        }
+
+        function getAgniStatus() {
+            if (!agniData.completed) return 'Not completed';
+            const totalDusti = (agniData.vishama || 0) + (agniData.tikshna || 0) + (agniData.manda || 0);
+            if (totalDusti === 0) return 'Sama Agni';
+            if (totalDusti <= 4) return 'Mild Agni Dusti';
+            return 'Moderate-Severe Agni Dusti';
+        }
+
+        function getDoshaStatus() {
+            if (!doshaData.completed) return 'Not completed';
+            const vata = doshaData.vata || 0;
+            const pitta = doshaData.pitta || 0;
+            const kapha = doshaData.kapha || 0;
+            const max = Math.max(vata, pitta, kapha);
+            
+            if (max === vata && vata > 0) return `Vata Dominant (${vata})`;
+            if (max === pitta && pitta > 0) return `Pitta Dominant (${pitta})`;
+            if (max === kapha && kapha > 0) return `Kapha Dominant (${kapha})`;
+            return 'Balanced';
+        }
+
+        function addEventListeners() {
+            // Add click listeners to all symptom items
+            document.querySelectorAll('.symptom-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    handleSymptomClick(this);
+                });
+            });
+
+            // Add click listeners to severity buttons
+            document.querySelectorAll('.severity-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    handleSeverityClick(this);
+                });
+            });
+        }
+
+        function handleSymptomClick(item) {
+            const dhatu = item.dataset.dhatu;
+            const type = item.dataset.type;
+            const symptom = item.dataset.symptom;
+
+            // Toggle selection
+            if (item.classList.contains('selected')) {
+                // Deselect
+                item.classList.remove('selected');
+                removeSymptom(dhatu, type, symptom);
+            } else {
+                // Select with default severity 1
+                item.classList.add('selected');
+                addSymptom(dhatu, type, symptom, 1);
+                // Set default severity button
+                const severityBtn1 = item.querySelector('.severity-btn[data-score="1"]');
+                if (severityBtn1) {
+                    item.querySelectorAll('.severity-btn').forEach(b => b.classList.remove('active'));
+                    severityBtn1.classList.add('active');
+                }
+            }
+
+            updateDisplay();
+            saveDhatuData();
+        }
+
+        function handleSeverityClick(btn) {
+            const item = btn.closest('.symptom-item');
+            const dhatu = item.dataset.dhatu;
+            const type = item.dataset.type;
+            const symptom = item.dataset.symptom;
+            const severity = parseInt(btn.dataset.score);
+
+            // Update severity button visual state
+            item.querySelectorAll('.severity-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Update symptom with new severity
+            updateSymptomSeverity(dhatu, type, symptom, severity);
+
+            updateDisplay();
+            saveDhatuData();
+        }
+
+        function addSymptom(dhatu, type, symptom, severity = 1) {
+            // Remove if already exists
+            removeSymptom(dhatu, type, symptom);
+            
+            // Add new symptom
+            dhatuData.selectedSymptoms[dhatu][type].push({
+                symptom: symptom,
+                severity: severity
+            });
+
+            // Update scores
+            dhatuData.scores[dhatu][type] += severity;
+        }
+
+        function removeSymptom(dhatu, type, symptom) {
+            const symptoms = dhatuData.selectedSymptoms[dhatu][type];
+            const index = symptoms.findIndex(s => s.symptom === symptom);
+            
+            if (index !== -1) {
+                // Remove from score
+                dhatuData.scores[dhatu][type] -= symptoms[index].severity;
+                // Remove from array
+                symptoms.splice(index, 1);
+            }
+        }
+
+        function updateSymptomSeverity(dhatu, type, symptom, newSeverity) {
+            const symptoms = dhatuData.selectedSymptoms[dhatu][type];
+            const symptomObj = symptoms.find(s => s.symptom === symptom);
+            
+            if (symptomObj) {
+                // Update score (subtract old, add new)
+                dhatuData.scores[dhatu][type] -= symptomObj.severity;
+                dhatuData.scores[dhatu][type] += newSeverity;
+                
+                // Update severity
+                symptomObj.severity = newSeverity;
+            }
+        }
+
+        function loadPreviousDhatuData() {
+            const saved = localStorage.getItem('4pcam_dhatu_data');
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    dhatuData = { ...dhatuData, ...data };
+                    restoreSelections();
+                } catch (e) {
+                    console.log('Could not load previous dhatu data');
+                }
+            }
+        }
+
+        function restoreSelections() {
+            // Restore selected symptoms and their severities
+            Object.keys(dhatuData.selectedSymptoms).forEach(dhatu => {
+                Object.keys(dhatuData.selectedSymptoms[dhatu]).forEach(type => {
+                    dhatuData.selectedSymptoms[dhatu][type].forEach(symptomObj => {
+                        const item = document.querySelector(`[data-dhatu="${dhatu}"][data-type="${type}"][data-symptom="${symptomObj.symptom}"]`);
+                        if (item) {
+                            item.classList.add('selected');
+                            const severityBtn = item.querySelector(`[data-score="${symptomObj.severity}"]`);
+                            if (severityBtn) {
+                                item.querySelectorAll('.severity-btn').forEach(b => b.classList.remove('active'));
+                                severityBtn.classList.add('active');
+                            }
+                        }
+                    });
+                });
+            });
+        }
+
+        function updateDisplay() {
+            // Update score displays
+            Object.keys(dhatuData.scores).forEach(dhatu => {
+                const kshayaEl = document.getElementById(`${dhatu}-kshaya-score`);
+                const vriddhiEl = document.getElementById(`${dhatu}-vriddhi-score`);
+                
+                if (kshayaEl) kshayaEl.textContent = dhatuData.scores[dhatu].kshaya;
+                if (vriddhiEl) vriddhiEl.textContent = dhatuData.scores[dhatu].vriddhi;
+            });
+
+            // Update selected symptoms summary
+            updateSelectedSymptoms();
+
+            // Update results
+            updateResults();
+
+            // Update completion button
+            updateCompletionButton();
+        }
+
+        function updateSelectedSymptoms() {
+            const symptomsEl = document.getElementById('selected-symptoms');
+            const summaryEl = document.getElementById('symptom-summary');
+            
+            let hasSymptoms = false;
+            let summaryHTML = '';
+
+            Object.keys(dhatuData.selectedSymptoms).forEach(dhatu => {
+                const dhatuSymptoms = dhatuData.selectedSymptoms[dhatu];
+                const kshayaSymptoms = dhatuSymptoms.kshaya || [];
+                const vriddhiSymptoms = dhatuSymptoms.vriddhi || [];
+                
+                if (kshayaSymptoms.length > 0 || vriddhiSymptoms.length > 0) {
+                    hasSymptoms = true;
+                    summaryHTML += `
+                        <div class="dhatu-summary-card">
+                            <h6>${dhatu.charAt(0).toUpperCase() + dhatu.slice(1)} Dhatu</h6>
+                            ${kshayaSymptoms.length > 0 ? `
+                                <div><strong>Kṣaya:</strong></div>
+                                ${kshayaSymptoms.map(s => `<div class="summary-symptom">${s.symptom} (${s.severity})</div>`).join('')}
+                            ` : ''}
+                            ${vriddhiSymptoms.length > 0 ? `
+                                <div><strong>Vriddhi:</strong></div>
+                                ${vriddhiSymptoms.map(s => `<div class="summary-symptom">${s.symptom} (${s.severity})</div>`).join('')}
+                            ` : ''}
+                        </div>
+                    `;
+                }
+            });
+
+            if (hasSymptoms) {
+                symptomsEl.style.display = 'block';
+                summaryEl.innerHTML = summaryHTML;
+            } else {
+                symptomsEl.style.display = 'none';
+            }
+        }
+
+        function updateResults() {
+            let resultsHTML = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">';
+            
+            Object.keys(dhatuData.scores).forEach(dhatu => {
+                const kshayaScore = dhatuData.scores[dhatu].kshaya;
+                const vriddhiScore = dhatuData.scores[dhatu].vriddhi;
+                const totalScore = kshayaScore + vriddhiScore;
+                
+                let severity = 'normal';
+                let severityText = 'No significant dushti';
+                
+                if (totalScore >= 1 && totalScore <= 3) {
+                    severity = 'mild';
+                    severityText = 'Mild dushti';
+                } else if (totalScore >= 4 && totalScore <= 6) {
+                    severity = 'moderate';
+                    severityText = 'Moderate dushti';
+                } else if (totalScore >= 7) {
+                    severity = 'severe';
+                    severityText = 'Severe dushti';
+                }
+
+                resultsHTML += `
+                    <div>
+                        <strong>${dhatu.charAt(0).toUpperCase() + dhatu.slice(1)}:</strong><br>
+                        Kṣaya: ${kshayaScore}, Vriddhi: ${vriddhiScore}<br>
+                        <span class="severity-indicator ${severity}">${severityText}</span>
+                    </div>
+                `;
+            });
+            
+            resultsHTML += '</div>';
+            
+            const selectedCount = Object.values(dhatuData.selectedSymptoms).reduce((total, dhatu) => {
+                return total + dhatu.kshaya.length + dhatu.vriddhi.length;
+            }, 0);
+            
+            resultsHTML += `<p style="margin-top: 15px;"><strong>Total Selected Symptoms:</strong> ${selectedCount}</p>`;
+
+            document.getElementById('dhatu-results').innerHTML = resultsHTML;
+        }
+
+        function updateCompletionButton() {
+            const completeBtn = document.getElementById('dhatu-complete-btn');
+            const selectedCount = Object.values(dhatuData.selectedSymptoms).reduce((total, dhatu) => {
+                return total + dhatu.kshaya.length + dhatu.vriddhi.length;
+            }, 0);
+
+            // Enable button if at least some symptoms are selected
+            if (selectedCount > 0) {
+                completeBtn.disabled = false;
+                completeBtn.style.background = 'linear-gradient(135deg, #00b894, #00a085)';
+            } else {
+                completeBtn.disabled = true;
+                completeBtn.style.background = '#ddd';
+            }
+        }
+
+        function saveDhatuData() {
+            dhatuData.timestamp = new Date().toISOString();
+            localStorage.setItem('4pcam_dhatu_data', JSON.stringify(dhatuData));
+        }
+
+        function completeDhatuAssessment() {
+            const selectedCount = Object.values(dhatuData.selectedSymptoms).reduce((total, dhatu) => {
+                return total + dhatu.kshaya.length + dhatu.vriddhi.length;
+            }, 0);
+
+            if (selectedCount === 0) {
+                alert('Please select at least some symptoms before completing the assessment.');
+                return;
+            }
+
+            // Mark as completed
+            dhatuData.completed = true;
+            saveDhatuData();
+
+            // Save combined data for final report
+            saveCombinedData();
+
+            alert('Dhatu assessment completed successfully!\n\nProceeding to Srotas assessment...');
+            window.location.href = 'sroto-dusti.html';
+        }
+
+        function saveCombinedData() {
+            let combinedData = {};
+            
+            // Load existing combined data
+            const existing = localStorage.getItem('4pcam_combined_data');
+            if (existing) {
+                try {
+                    combinedData = JSON.parse(existing);
+                } catch (e) {
+                    combinedData = {};
+                }
+            }
+
+            // Update with current data
+            combinedData.patient = patientData;
+            combinedData.agni = agniData;
+            combinedData.dosha = doshaData;
+            combinedData.dhatu = dhatuData;
+            combinedData.timestamp = new Date().toISOString();
+
+            localStorage.setItem('4pcam_combined_data', JSON.stringify(combinedData));
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                saveDhatuData();
+                alert('Dhatu assessment data saved!');
+            }
+            if (e.key === 'Escape') {
+                window.location.href = 'dosha-dusti.html';
+            }
+        });
+
+        console.log("✅ Dhatu Dusti Assessment System loaded successfully!");
+    </script>
+</body>
+</html>
